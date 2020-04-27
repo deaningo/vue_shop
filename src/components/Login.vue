@@ -69,7 +69,7 @@ export default {
         if (result.meta.status == 200) this.$message({
           message: '登录成功',
           type: 'success',
-          duration:5000
+          duration:500
         });
         //保存token和跳转页面
         window.sessionStorage.setItem("token",result.data.token)
