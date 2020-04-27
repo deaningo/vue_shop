@@ -41,7 +41,7 @@
             <el-table-column prop="role_name" label="操作">
                 <template slot-scope="scope">
                     <el-button type="primary" icon="el-icon-edit" circle @click="showEditDiolog(scope.row.id);"></el-button>
-                    <el-button type="warning" icon="el-icon-star-off" circle></el-button>
+                    <el-button type="warning" icon="el-icon-star-off" circle @click="showRoles(scope.row);"></el-button>
                     <el-button type="danger" icon="el-icon-delete" circle @click="removeUserById(scope.row.id);"></el-button>
                 </template>
             </el-table-column>
@@ -63,7 +63,7 @@
         <el-dialog
             title="添加用户"
             :visible.sync="dialogIsVisible"
-            width="30%"
+            width="50%"
         >
             <!-- <span>这是一段信息</span>
             <span slot="footer" class="dialog-footer">
@@ -94,7 +94,7 @@
         <el-dialog
             title="修改用户"
             :visible.sync="EditDialogIsVisible"
-            width="30%"
+            width="50%"
         >
             <el-form ref="updateUserFormRef" :model="editFormData" :rules="editFormRuls" label-width="100px" class="demo-ruleForm">
                 <el-form-item label="用户名" prop="username">
@@ -111,6 +111,30 @@
                 <el-button @click="resetEditForm();">重 置</el-button>
                 <el-button type="primary" @click="submitEditForm()">提 交</el-button>
             </span>
+        </el-dialog>
+        <!-- 分配角色对话框 -->
+        <el-dialog
+        title="分配角色"
+        :visible.sync="roleDialogVisible"
+        width="50%"
+        @close = "resetRoles();"
+        >
+            <div class="role_left">
+                <p>当前的用户：{{this.userinfo.username}}</p>
+                <p>当前的角色：{{this.userinfo.role_name}}</p>
+                <p>
+                    分配新角色
+                    <el-select v-model="selectedRoleList" placeholder="请选择">
+                        <el-option v-for="item in roleList" :key="item.id" :label="item.roleName" :value="item.id">
+                        </el-option>
+                    </el-select>
+                </p>
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="roleDialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="saveRoleInfo();">确 定</el-button>
+            </span>
+            
         </el-dialog>
     </div>
 </template>
@@ -178,7 +202,14 @@ export default {
                         { required: true, message: '请输入邮箱', trigger: 'blur' },
                         { validator: checkemail,trigger: 'blur'}
                 ]
-            }
+            },
+            roleDialogVisible:false,
+            //需要分配的角色信息
+            userinfo:{},
+            //获取的角色列表
+            roleList:{},
+            //已选中的角色id
+            selectedRoleList:''
         }
     },
     created(){
@@ -285,6 +316,34 @@ export default {
                     message: '已取消删除'
                 });          
             });
+        },
+        //分配角色
+        async showRoles(userinfo){
+            
+            this.userinfo = userinfo;
+            const {data:res} = await this.$http.get('roles');
+            if(res.meta.status !== 200){
+                return this.$message.error("获取角色失败");
+            }
+            this.roleList = res.data;
+            //console.log(this.roleList);
+            this.roleDialogVisible = true;
+        },
+        async saveRoleInfo(){
+            if(!this.selectedRoleList){
+                return this.$message.error("请选择一个角色");
+            }
+            const {data:res} = await this.$http.put(`users/${this.userinfo.id}/role`,{rid:this.selectedRoleList});
+            if(res.meta.status !== 200 ){
+                return this.$message.error("更新角色失败");
+            }
+            this.$message.success("更新角色成功");
+            this.getUserList();
+            this.roleDialogVisible = false;
+        },
+        resetRoles(){
+            this.selectedRoleList = '';
+            this.userinfo = {};
         }
     }
 }
@@ -299,4 +358,10 @@ export default {
   .input-with-select .el-input-group__prepend {
     background-color: #fff;
   }
+.role_left{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+}
 </style>
