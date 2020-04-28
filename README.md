@@ -1,5 +1,5 @@
 # vue_shop
-电商管理后台 API 接口文档     [https://deaningo.github.io/2019/05/14/vueShop_api/#more]()
+电商管理后台 API 接口文档     [https://deaningo.github.io/2019/05/14/vueShop_api/#more](https://deaningo.github.io/2019/05/14/vueShop_api/#more)
 ## Project setup
 ```
 npm install
